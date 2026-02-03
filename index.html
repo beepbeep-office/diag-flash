@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Flash Trésorerie Coopératives | BM&A</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bma-navy: #1C2540;
+            --bma-red: #E8203F;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --bg-gradient: linear-gradient(135deg, #1C2540 0%, #0f172a 100%);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Logo permanent visible sur toutes les étapes */
+        .sticky-logo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .sticky-logo img { height: 30px; width: auto; }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header { text-align: center; margin-bottom: 40px; }
+        
+        .main-logo-box {
+            background: white;
+            display: inline-block;
+            padding: 15px 35px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .main-logo-box img { height: 50px; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #fff 50%, var(--bma-red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 700px; margin: 0 auto 30px; }
+
+        #quiz-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar-container {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--bma-red);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .category-tag {
+            background: var(--bma-red);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .question-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 25px; line-height: 1.3; }
+
+        .option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: 0.2s;
+        }
+        .option:hover { border-color: var(--bma-red); background: rgba(232, 32, 63, 0.05); }
+        .option.selected { border-color: var(--bma-red); background: rgba(232, 32, 63, 0.15); }
+        .option strong { display: block; margin-bottom: 4px; }
+        .option small { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
+
+        .btn { padding: 12px 30px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; }
+        .btn-primary { background: var(--bma-red); color: white; }
+        .btn-primary:disabled { opacity: 0.2; }
+        .btn-secondary { background: transparent; color: var(--text-muted); border: 1px solid rgba(255,255,255,0.2); }
+
+        /* ANALYSE FINALE */
+        .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+        .radar-box { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 20px; text-align: center; }
+        .score-box { text-align: center; padding: 30px; background: rgba(255,255,255,0.03); border-radius: 15px; display: flex; flex-direction: column; justify-content: center; }
+
+        .flash-warning { background: rgba(232, 32, 63, 0.08); border: 1px solid var(--bma-red); padding: 25px; border-radius: 12px; margin-top: 25px; }
+        .flash-warning h3 { color: var(--bma-red); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+
+        .category-mini-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border-left: 4px solid var(--bma-red); }
+
+        .legend { display: flex; justify-content: center; gap: 20px; font-size: 0.8rem; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        @media (max-width: 850px) { .results-grid { grid-template-columns: 1fr; } .sticky-logo { display: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-logo">
+        <img src="logo.png" alt="BM&A">
+    </div>
+
+    <div class="container">
+        <header id="header-main">
+            <div class="main-logo-box">
+                <img src="logo.png" alt="BM&A">
+            </div>
+            <h1>Diagnostic Trésorerie Coop</h1>
+            <p class="subtitle">Évaluez la performance de votre cash management face aux spécificités du modèle coopératif (campagnes, adhérents, financements).</p>
+        </header>
+
+        <div id="quiz-container">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="questions-wrapper"></div>
+            <div class="navigation" style="display:flex; justify-content: space-between; margin-top:20px;">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">Précédent</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Suivant</button>
+            </div>
+        </div>
+
+        <div id="results" style="display:none;"></div>
+    </div>
+
+    <script>
+        const categories = {
+            'liquidite': 'Prévisions & Liquidité',
+            'bfr': 'Performance BFR',
+            'gouvernance': 'Culture Cash & Gouvernance',
+            'adherents': 'Cycle Adhérents (CCA)',
+            'financement': 'Structure de Financement',
+            'digital': 'Outils & Digitalisation'
+        };
+
+        const benchmark = { 'liquidite': 92, 'bfr': 88, 'gouvernance': 85, 'adherents': 95, 'financement': 90, 'digital': 90 };
+
+        const questions = [
+            { category: 'liquidite', question: 'Comment intégrez-vous la saisonnalité des campagnes dans vos prévisions ?', 
+              options: [
+                { label: 'Budget annuel figé', description: 'Pas de rolling forecast ni d\'ajustement selon les cours ou récoltes.', score: 0 },
+                { label: 'Mise à jour trimestrielle', description: 'Visibilité moyenne, peu réactive aux variations de collecte.', score: 40 },
+                { label: 'Forecast glissant 13 semaines', description: 'Outil de pilotage hebdomadaire précis incluant les flux de campagne.', score: 100 }
+              ]},
+            { category: 'bfr', question: 'Quel est votre niveau de maîtrise sur les stocks (MP, MICAE, PF) ?', 
+              options: [
+                { label: 'Suivi comptable a posteriori', description: 'Pas de vision temps réel sur les niveaux de stock par site.', score: 10 },
+                { label: 'Inventaires réguliers', description: 'Suivi des rotations mais sans réelle animation S&OP.', score: 60 },
+                { label: 'Pilotage désiloté', description: 'KPI (DIO) intégrés au commerce et à la production avec objectifs de réduction.', score: 100 }
+              ]},
+            { category: 'gouvernance', question: 'Comment le Conseil d\'Administration est-il impliqué dans les enjeux Cash ?', 
+              options: [
+                { label: 'Reporting annuel uniquement', description: 'Le cash est vu comme une donnée comptable de clôture.', score: 0 },
+                { label: 'Comité financier trimestriel', description: 'Les élus sont informés mais peu d\'outils de pilotage opérationnel.', score: 50 },
+                { label: 'Culture Cash partagée', description: 'Indicateurs cash portés par les élus et intégrés aux bonus des managers.', score: 100 }
+              ]},
+            { category: 'adherents', question: 'Comment gérez-vous la relation financière et les CCA (Comptes Courants Adhérents) ?', 
+              options: [
+                { label: 'Gestion manuelle', description: 'Relevés papier, délais de paiement longs, forte incertitude sur les retraits.', score: 20 },
+                { label: 'Système informatisé partiel', description: 'Exports ERP réguliers, accès web pour consultation des relevés.', score: 60 },
+                { label: 'Portail Adhérent interactif', description: 'Visibilité temps réel, gestion autonome des demandes d\'avances.', score: 100 }
+              ]},
+            { category: 'financement', question: 'Votre structure de dette est-elle optimisée pour les pics de campagne ?', 
+              options: [
+                { label: 'Découverts et CT classique', description: 'Coût élevé et risque de liquidité lors des fortes collectes.', score: 30 },
+                { label: 'Lignes confirmées et Crédit Campagne', description: 'Structure solide mais peu de diversification (Factor/Reverse).', score: 70 },
+                { label: 'Mix de financement agile', description: 'Recours à la désintermédiation, Factor déconnecté ou titrisation.', score: 100 }
+              ]},
+            { category: 'digital', question: 'Quel est le degré d\'intégration de votre TMS (Logiciel de Trésorerie) ?', 
+              options: [
+                { label: 'Tableurs Excel dominants', description: 'Risques opérationnels élevés et perte de temps en saisie.', score: 0 },
+                { label: 'Logiciel spécialisé', description: 'Connectivité bancaire OK mais pas de lien avec les flux de l\'ERP.', score: 50 },
+                { label: 'Écosystème digital intégré', description: 'Flux automatisés, connecteurs API et dashboarding temps réel.', score: 100 }
+              ]}
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+
+        function initQuiz() { renderQuestion(); }
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('questions-wrapper').innerHTML = `
+                <div class="category-tag">${categories[q.category]}</div>
+                <h2 class="question-title">${q.question}</h2>
+                <div class="options">
+                    ${q.options.map((opt, i) => `
+                        <div class="option ${answers[currentQuestion] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+                            <strong>${opt.label}</strong>
+                            <small>${opt.description}</small>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            updateButtons();
+        }
+
+        function selectOption(idx) { answers[currentQuestion] = idx; renderQuestion(); }
+        function updateProgress() { document.getElementById('progressBar').style.width = ((currentQuestion + 1) / questions.length) * 100 + '%'; }
+        
+        function updateButtons() {
+            const nextBtn = document.getElementById('nextBtn');
+            document.getElementById('prevBtn').style.display = currentQuestion === 0 ? 'none' : 'block';
+            nextBtn.disabled = answers[currentQuestion] === undefined;
+            nextBtn.textContent = currentQuestion === questions.length - 1 ? 'Voir mon Diagnostic BM&A' : 'Suivant';
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) { currentQuestion++; renderQuestion(); updateProgress(); } 
+            else { showResults(); }
+        }
+
+        function previousQuestion() { if (currentQuestion > 0) { currentQuestion--; renderQuestion(); updateProgress(); } }
+
+        function showResults() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('header-main').style.display = 'none';
+            const resDiv = document.getElementById('results');
+            resDiv.style.display = 'block';
+
+            const scores = {};
+            let total = 0;
+            questions.forEach((q, i) => {
+                const s = q.options[answers[i]].score;
+                scores[q.category] = s;
+                total += s;
+            });
+            const finalAvg = Math.round(total / questions.length);
+
+            // ANALYSE SIGN AUX FAIBLES
+            let warnings = "";
+            if (scores['liquidite'] < 50) warnings += "<li><strong>Alerte Liquidité :</strong> Le manque de rolling forecast expose la coopérative à des tensions lors des pics de collecte.</li>";
+            if (scores['adherents'] < 60) warnings += "<li><strong>Relation Adhérent :</strong> Une gestion manuelle des CCA freine la réactivité et augmente les risques d'erreur de règlement.</li>";
+            if (scores['bfr'] < 60) warnings += "<li><strong>Optimisation BFR :</strong> Les stocks ne sont pas pilotés de manière transversale (Production/Commerce).</li>";
+
+            resDiv.innerHTML = `
+                <div style="text-align:center; margin-bottom:40px;">
+                    <img src="logo.png" style="height:45px; margin-bottom:15px;">
+                    <h2 style="font-family:'Playfair Display'; font-size:2.2rem;">Votre Bilan de Maturité Cash</h2>
+                </div>
+
+                <div class="results-grid">
+                    <div class="score-box">
+                        <span style="font-size:0.9rem; color:var(--text-muted); text-transform:uppercase;">Indice Cash Coop</span>
+                        <div style="font-size:5rem; font-weight:900; color:var(--bma-red);">${finalAvg}%</div>
+                        <p style="font-size:0.95rem; line-height:1.4;">Performance globale par rapport au référentiel BM&A 2025.</p>
+                    </div>
+
+                    <div class="radar-box">
+                        <canvas id="radarChart" width="300" height="300"></canvas>
+                        <div class="legend">
+                            <div class="legend-item"><div class="dot" style="background:var(--bma-red)"></div> Votre Coopérative</div>
+                            <div class="legend-item"><div class="dot" style="background:rgba(255,255,255,0.2)"></div> Best in Class</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:15px; margin-top:30px;">
+                    ${Object.entries(scores).map(([k, v]) => `
+                        <div class="category-mini-card">
+                            <div style="font-size:0.8rem; color:var(--text-muted);">${categories[k]}</div>
+                            <div style="font-size:1.4rem; font-weight:700; color:${v < 50 ? 'var(--bma-red)' : '#fff'}">${v}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                ${warnings ? `
+                <div class="flash-warning">
+                    <h3>🚩 Signaux faibles identifiés</h3>
+                    <ul style="margin-left:20px; font-size:0.95rem; line-height:1.7;">${warnings}</ul>
+                </div>` : ''}
+
+                <div style="margin-top:40px; background:var(--bma-navy); padding:40px; border-radius:15px; text-align:center; border: 1px solid rgba(232, 32, 63, 0.4);">
+                    <h3 style="margin-bottom:15px;">Sécurisez votre trajectoire Cash</h3>
+                    <p style="margin-bottom:25px; color:var(--text-muted);">BM&A accompagne les coopératives dans la structuration de leur gestion de liquidité et l'optimisation des flux adhérents.</p>
+                    <button class="btn btn-primary" onclick="location.reload()">Refaire le diagnostic</button>
+                </div>
+            `;
+
+            drawRadar(scores);
+        }
+
+        function drawRadar(userScores) {
+            const canvas = document.getElementById('radarChart');
+            const ctx = canvas.getContext('2d');
+            const center = 150;
+            const radius = 95;
+            const cats = Object.keys(categories);
+            const angleStep = (Math.PI * 2) / cats.length;
+
+            function getPoints(data) {
+                return cats.map((c, i) => {
+                    const r = (data[c] / 100) * radius;
+                    return { x: center + r * Math.cos(angleStep * i - Math.PI/2), y: center + r * Math.sin(angleStep * i - Math.PI/2) };
+                });
+            }
+
+            // Grille
+            ctx.strokeStyle = "rgba(255,255,255,0.1)";
+            for(let i=1; i<=4; i++){ ctx.beginPath(); ctx.arc(center, center, (radius/4)*i, 0, Math.PI*2); ctx.stroke(); }
+
+            // Dessin Benchmark
+            const benchPts = getPoints(benchmark);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            benchPts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+            ctx.closePath(); ctx.stroke(); ctx.fill();
+
+            // Dessin Utilisateur
+            const userPts = getPoints(userScores);
+            ctx.setLineDash([]);
+            ctx.strokeStyle = "#E8203F";
+            ctx.fillStyle = "rgba(232, 32, 63, 0.4)";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            userPts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+            ctx.closePath(); ctx.stroke(); ctx.fill();
+        }
+
+        initQuiz();
+    </script>
+</body>
+</html>
